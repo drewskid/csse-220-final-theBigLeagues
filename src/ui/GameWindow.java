@@ -23,8 +23,8 @@ public class GameWindow {
 		frame.setSize(800, 600);
 		frame.setLocationRelativeTo(null); // center on screen (nice UX, still minimal)
 		frame.setVisible(true);
-		timer = new Timer(16, null); // ~60 FPS
-        timer.start();
+//		timer = new Timer(16, null); // ~60 FPS
+//        timer.start();
 		}
 
 }

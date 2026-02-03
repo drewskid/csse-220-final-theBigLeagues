@@ -1,30 +1,25 @@
 package ui;
 
 import javax.swing.JFrame;
-import javax.swing.Timer;
 
 import model.GameModel;
 
 public class GameWindow {
+	private JFrame frame;
+	private GameModel model;
 
-	public static void show() {
-		// Minimal model instance (empty for now, by design)
-		GameModel model = new GameModel();
-		Timer timer;
+	public GameWindow(GameModel model) {
+		this.model = model;
 
-
-		JFrame frame = new JFrame("CSSE220 Final Project");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-
+		frame = new JFrame("CSSE220 Final Project");
 		frame.add(new GameComponent(model));
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.pack();
+		frame.setResizable(false);
+	}
 
-
-		frame.setSize(800, 600);
-		frame.setLocationRelativeTo(null); // center on screen (nice UX, still minimal)
+	public void run() {
+		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
-//		timer = new Timer(16, null); // ~60 FPS
-//        timer.start();
-		}
-
+	}
 }

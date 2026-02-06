@@ -22,10 +22,11 @@ public class GameComponent extends JPanel {
 
 	private GameModel model;
 
-	private boolean up, down, left, right;
+	private boolean up, down, left, right, space;
 
 	public GameComponent(GameModel model) {
 		this.model = model;
+		space = false;
 		setPreferredSize(new Dimension(WIDTH, HEIGHT));
 
 		setupKeyBindings();
@@ -34,6 +35,7 @@ public class GameComponent extends JPanel {
 			handlePlayerMovement();
 			model.update();   
 			repaint();
+			model.collectItem(space);
 		});
 		timer.start();
 	}
@@ -66,6 +68,8 @@ public class GameComponent extends JPanel {
 		input.put(KeyStroke.getKeyStroke("released LEFT"), "leftReleased");
 		input.put(KeyStroke.getKeyStroke("pressed RIGHT"), "rightPressed");
 		input.put(KeyStroke.getKeyStroke("released RIGHT"), "rightReleased");
+		input.put(KeyStroke.getKeyStroke("pressed SPACE"), "spacePressed");
+		input.put(KeyStroke.getKeyStroke("released SPACE"), "spaceReleased");
 
 		actions.put("upPressed", new AbstractAction() {
 		    @Override
@@ -102,6 +106,15 @@ public class GameComponent extends JPanel {
 		    @Override
 		    public void actionPerformed(ActionEvent e) { right = false; }
 		});
+		actions.put("spacePressed", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {space = true;}
+		});
+		actions.put("spaceReleased", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {space = false;}
+		});
+		
+		
+		
 
 	}
 

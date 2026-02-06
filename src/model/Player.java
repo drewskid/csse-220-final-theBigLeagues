@@ -8,12 +8,14 @@ public class Player extends Asset {
     public enum Direction { DOWN, UP, LEFT, RIGHT }
 
     private int lives;
+    private int score;
     private int speed = 5;
 
     private final BufferedImage downSprite;
     private final BufferedImage upSprite;
     private final BufferedImage leftSprite;
     private final BufferedImage rightSprite;
+    
 
     private Direction dir = Direction.DOWN;
 
@@ -29,6 +31,7 @@ public class Player extends Asset {
 
         applySprite();
     }
+    
 
     public int getSpeed() { return speed; }
 

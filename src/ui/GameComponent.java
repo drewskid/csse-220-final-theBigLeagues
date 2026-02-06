@@ -1,6 +1,8 @@
 package ui;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
@@ -34,8 +36,8 @@ public class GameComponent extends JPanel {
 		Timer timer = new Timer(16, e -> {
 			handlePlayerMovement();
 			model.update();   
-			repaint();
 			model.collectItem(space);
+			repaint();
 		});
 		timer.start();
 	}
@@ -123,5 +125,8 @@ public class GameComponent extends JPanel {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
 		model.draw(g2);
+		g2.setColor(Color.WHITE);
+		g2.setFont(new Font("Monospaced", Font.BOLD, 20));
+		g2.drawString("Score: " + model.getScore(), 20, 25);
 	}
 }

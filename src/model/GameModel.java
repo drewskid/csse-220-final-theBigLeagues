@@ -24,6 +24,7 @@ public class GameModel {
     private Player player;
     private ArrayList<Zombie> zombies = new ArrayList<>();
     private ArrayList<Collectible> collectibles = new ArrayList<>();
+    private int score = 0;
 
     public GameModel() {
         this.floor = new Floor(WORLD_H, WORLD_W, 0, 0);
@@ -54,6 +55,10 @@ public class GameModel {
 
     public Player getPlayer() {
         return player;
+    }
+    
+    public int getScore() {
+    	return score;
     }
 
     // Player movement with wall collision + bounds check
@@ -95,7 +100,13 @@ public class GameModel {
     public void collectItem(boolean pickup) {
         if (!pickup || player == null) return;
 
-        collectibles.removeIf(c -> player.getBounds().intersects(c.getBounds()));
+        collectibles.removeIf(c -> {
+        	if(player.getBounds().intersects(c.getBounds())) {
+        		score += 50; // each coin is wirth 50, can be changed
+        		return true;
+        	}
+        	return false;
+        });
     }
 
 

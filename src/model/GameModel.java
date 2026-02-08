@@ -40,7 +40,7 @@ public class GameModel {
         for (Collectible c : collectibles) c.draw(g2);
 
         if (player != null) player.draw(g2);
-
+        
         for (Zombie z : zombies) z.draw(g2);
     }
 
@@ -97,18 +97,25 @@ public class GameModel {
         else if (dx > 0) player.setDirection(Player.Direction.RIGHT);
     }
     
-    public void collectItem(boolean pickup) {
-        if (!pickup || player == null) return;
+    public void collectItem() {
 
         collectibles.removeIf(c -> {
         	if(player.getBounds().intersects(c.getBounds())) {
-        		score += 50; // each coin is wirth 50, can be changed
+        		score += 50; // each coin is worth 50, can be changed
         		return true;
         	}
         	return false;
         });
     }
-
+    
+    public void hitZombie() {
+    	for (Zombie z : zombies) {
+    		if (player.getBounds().intersects(z.getBounds())) {
+    			player.updateLives();
+    			movePlayer(player.getX(), player.getY());
+    		}
+    	}
+    }
 
     private boolean hitsWall(Asset a) {
         for (Wall w : walls) {
@@ -240,4 +247,5 @@ public class GameModel {
 
         return lines;
     }
+
 }

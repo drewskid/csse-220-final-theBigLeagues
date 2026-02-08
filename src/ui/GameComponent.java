@@ -16,31 +16,40 @@ import javax.swing.KeyStroke;
 import javax.swing.Timer;
 
 import model.GameModel;
+import model.Player;
 
 public class GameComponent extends JPanel {
 
 	private final int WIDTH = 800;
 	private final int HEIGHT = 600;
-
 	private GameModel model;
-
-	private boolean up, down, left, right, space;
+	private boolean up, down, left, right, space, R;
 
 	public GameComponent(GameModel model) {
 		this.model = model;
 		space = false;
+		R = false;
 		setPreferredSize(new Dimension(WIDTH, HEIGHT));
 
 		setupKeyBindings();
-
+		
 		Timer timer = new Timer(16, e -> {
+			if (model.getPlayer().getLives() <= 0) {
+				return;
+			}
 			handlePlayerMovement();
 			model.update();   
-			model.collectItem(space);
+			model.collectItem();
+			model.hitZombie();
+			
 			repaint();
 		});
 		timer.start();
+		
+		
+		
 	}
+
 
 	private void handlePlayerMovement() {
 		int speed = model.getPlayer().getSpeed();
@@ -72,6 +81,8 @@ public class GameComponent extends JPanel {
 		input.put(KeyStroke.getKeyStroke("released RIGHT"), "rightReleased");
 		input.put(KeyStroke.getKeyStroke("pressed SPACE"), "spacePressed");
 		input.put(KeyStroke.getKeyStroke("released SPACE"), "spaceReleased");
+		input.put(KeyStroke.getKeyStroke("pressed R"), "rPressed");
+		input.put(KeyStroke.getKeyStroke("released R"), "rReleased");
 
 		actions.put("upPressed", new AbstractAction() {
 		    @Override
@@ -114,6 +125,12 @@ public class GameComponent extends JPanel {
 		actions.put("spaceReleased", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {space = false;}
 		});
+		actions.put("rPressed", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {R = true;}
+		});
+		actions.put("rReleased", new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {R = false;}
+		});
 		
 		
 		
@@ -128,5 +145,6 @@ public class GameComponent extends JPanel {
 		g2.setColor(Color.WHITE);
 		g2.setFont(new Font("Monospaced", Font.BOLD, 20));
 		g2.drawString("Score: " + model.getScore(), 20, 25);
+		g2.drawString("Lives: " + model.getPlayer().getLives(), 40, 50);
 	}
 }

@@ -7,7 +7,7 @@ public class Player extends Asset {
 
     public enum Direction { DOWN, UP, LEFT, RIGHT }
 
-    private int lives;
+    private int lives = 3;
     private int score;
     private int speed = 5;
 
@@ -34,6 +34,8 @@ public class Player extends Asset {
     
 
     public int getSpeed() { return speed; }
+    
+    public int getLives() {return lives;}
 
     public void setDirection(Direction d) {
         if (d != null && d != dir) {
@@ -49,5 +51,9 @@ public class Player extends Asset {
             case RIGHT -> setSprite(rightSprite);
             default -> setSprite(downSprite);
         }
+    }
+    
+    protected void updateLives() {
+    	this.lives -= 1;
     }
 }

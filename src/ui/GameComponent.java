@@ -24,6 +24,7 @@ public class GameComponent extends JPanel {
 	private final int HEIGHT = 600;
 	private GameModel model;
 	private boolean up, down, left, right, space, R;
+	private boolean gameOver = false;
 
 	public GameComponent(GameModel model) {
 		this.model = model;
@@ -34,14 +35,15 @@ public class GameComponent extends JPanel {
 		setupKeyBindings();
 		
 		Timer timer = new Timer(16, e -> {
-			if (model.getPlayer().getLives() <= 0) {
+			if(model.getPlayer().getLives() <= 0) {
+				if (R) model.resetGame();
+				repaint();
 				return;
 			}
 			handlePlayerMovement();
 			model.update();   
 			model.collectItem();
 			model.hitZombie();
-			
 			repaint();
 		});
 		timer.start();
@@ -146,5 +148,13 @@ public class GameComponent extends JPanel {
 		g2.setFont(new Font("Monospaced", Font.BOLD, 20));
 		g2.drawString("Score: " + model.getScore(), 20, 25);
 		g2.drawString("Lives: " + model.getPlayer().getLives(), 40, 50);
+		if(model.getPlayer().getLives() <= 0) {
+			g2.setFont(new Font("Monospaced", Font.BOLD, 48));
+			g2.setColor(Color.RED);
+			String msg = "GAME OVER";
+			g2.drawString(msg, (WIDTH/2)-100, HEIGHT/2);
+			g2.setFont(new Font("Monospaced", Font.BOLD, 20));
+			g2.drawString("Press R to Restart", (WIDTH/2)-75, HEIGHT/2+40);
+		}
 	}
 }

@@ -247,5 +247,8 @@ public class GameModel {
 
         return lines;
     }
-
+    public void resetGame() {
+    	score = 0;
+    	loadLevel("level1.txt");
+    }
 }

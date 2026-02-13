@@ -25,6 +25,8 @@ public class GameModel {
     private ArrayList<Zombie> zombies = new ArrayList<>();
     private ArrayList<Collectible> collectibles = new ArrayList<>();
     private int score = 0;
+    private int playerStartX;
+    private int playerStartY;
 
     public GameModel() {
         this.floor = new Floor(WORLD_H, WORLD_W, 0, 0);
@@ -112,9 +114,14 @@ public class GameModel {
     	for (Zombie z : zombies) {
     		if (player.getBounds().intersects(z.getBounds())) {
     			player.updateLives();
-    			movePlayer(player.getX(), player.getY());
+    			respawnPlayer();
+    			return;
     		}
     	}
+    }
+    public void respawnPlayer() {
+    	player.setX(playerStartX);
+    	player.setY(playerStartY);
     }
 
     private boolean hitsWall(Asset a) {
@@ -180,11 +187,13 @@ public class GameModel {
 
                     case 'P':
                         // Put the player roughly centered in the tile
-                        player = new Player(
+                    	playerStartX = x + (TILE - PLAYER_SIZE) / 2;
+                    	playerStartY = y + (TILE - PLAYER_SIZE) / 2;
+                    	player = new Player(
                                 3,
                                 PLAYER_SIZE, PLAYER_SIZE,
-                                x + (TILE - PLAYER_SIZE) / 2,
-                                y + (TILE - PLAYER_SIZE) / 2
+                                playerStartX,
+                                playerStartY
                         );
                         break;
 

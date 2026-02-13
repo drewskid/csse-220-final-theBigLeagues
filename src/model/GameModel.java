@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import javax.imageio.plugins.tiff.ExifGPSTagSet;
+
 public class GameModel {
 
     public static final int WORLD_W = 800;
@@ -21,6 +23,7 @@ public class GameModel {
 
     private Floor floor;
     private ArrayList<Wall> walls = new ArrayList<>();
+    private Exit exit;
     private Player player;
     private ArrayList<Zombie> zombies = new ArrayList<>();
     private ArrayList<Collectible> collectibles = new ArrayList<>();
@@ -33,6 +36,7 @@ public class GameModel {
 
     public void draw(Graphics2D g2) {
         floor.draw(g2);
+        exit.draw(g2);
 
         for (Wall w : walls) w.draw(g2);
 
@@ -48,6 +52,11 @@ public class GameModel {
         for (Zombie z : zombies) {
             z.update(walls, WORLD_W, WORLD_H);
         }
+        if (player.getBounds().intersects(exit.getBounds())) {
+        	loadLevel("level2.txt");
+        }
+        
+        
 
         // Optional: basic collectible pickup (only if Collectible extends Asset and you want it)
         // collectibles.removeIf(c -> player != null && player.getBounds().intersects(c.getBounds()));
@@ -139,6 +148,7 @@ public class GameModel {
      *  'Z'        = zombie start
      *  'C' or 'G' = collectible
      *  '.' ' ' 'E'= open floor (E treated as open tile for now)
+     *  'X'        = exit tile
      */
     private void loadLevel(String filename) {
         walls.clear();
@@ -208,6 +218,10 @@ public class GameModel {
                                 y + (TILE - chh) / 2
                         ));
                         break;
+                    
+                   case 'X':
+                	   exit = new Exit(TILE, TILE, x, y);
+                       break;
 
                     // '.', ' ', 'E' etc. are just open floor tiles; do nothing
                     default:

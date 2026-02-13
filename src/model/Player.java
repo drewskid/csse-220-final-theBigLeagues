@@ -28,6 +28,11 @@ public class Player extends Asset {
         upSprite = SpriteStore.load("/assets/player_up.png");
         leftSprite = SpriteStore.load("/assets/player_left.png");
         rightSprite = SpriteStore.load("/assets/player_right.png");
+//        downSprite = SpriteStore.load("/assets/player_new.png");
+//        upSprite = SpriteStore.load("/assets/player_up_new.png");
+//        leftSprite = SpriteStore.load("/assets/player_left_new.png");
+//        rightSprite = SpriteStore.load("/assets/player_right_new.png");
+        
 
         applySprite();
     }

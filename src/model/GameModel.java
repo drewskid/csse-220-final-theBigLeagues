@@ -28,6 +28,7 @@ public class GameModel {
     private ArrayList<Zombie> zombies = new ArrayList<>();
     private ArrayList<Collectible> collectibles = new ArrayList<>();
     private int score = 0;
+    private int oldLives = 3;
     private int playerStartX;
     private int playerStartY;
 
@@ -55,7 +56,9 @@ public class GameModel {
             z.update(walls, WORLD_W, WORLD_H);
         }
         if (player.getBounds().intersects(exit.getBounds())) {
+        	oldLives = player.getLives();
         	loadLevel("level2.txt");
+        	//make a set lives method in player to retain oldLives
         }
         
         
@@ -166,7 +169,7 @@ public class GameModel {
         ArrayList<String> lines = readAllLines(filename);
         if (lines.isEmpty()) {
            
-            player = new Player(3, PLAYER_SIZE, PLAYER_SIZE, TILE, TILE);
+            player = new Player(oldLives, PLAYER_SIZE, PLAYER_SIZE, TILE, TILE);
             zombies.add(new Zombie(ZOMBIE_SIZE, ZOMBIE_SIZE, 5 * TILE, 5 * TILE, true));
             return;
         }
@@ -200,7 +203,7 @@ public class GameModel {
                     	playerStartX = x + (TILE - PLAYER_SIZE) / 2;
                     	playerStartY = y + (TILE - PLAYER_SIZE) / 2;
                     	player = new Player(
-                                3,
+                                oldLives,
                                 PLAYER_SIZE, PLAYER_SIZE,
                                 playerStartX,
                                 playerStartY
@@ -272,6 +275,7 @@ public class GameModel {
     }
     public void resetGame() {
     	score = 0;
+    	oldLives = 3;
     	loadLevel("level1.txt");
     }
 }

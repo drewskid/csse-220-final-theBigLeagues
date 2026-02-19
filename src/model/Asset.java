@@ -5,7 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
-public class Asset {
+public abstract class Asset {
     private int height;
     private int width;
     private int x;

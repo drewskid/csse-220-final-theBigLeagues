@@ -25,6 +25,7 @@ public class GameModel {
 	private ArrayList<Zombie> zombies = new ArrayList<>();
 	private ArrayList<Collectible> collectibles = new ArrayList<>();
 
+	// YOUR STATE (kept)
 	private int score = 0;
 	private int oldLives = 3;
 
@@ -68,19 +69,35 @@ public class GameModel {
 		for (Zombie z : zombies) z.draw(g2);
 	}
 
+	/**
+	 * YOUR BEHAVIOR:
+	 * - Zombies move
+	 * - Player timers (Andrew feature) update each frame
+	 * - LevelComplete only becomes true when player reaches exit (you handle changing levels elsewhere)
+	 * - Zombie contact processed here
+	 */
 	public void update() {
 		for (Zombie z : zombies) {
 			z.update(walls, WORLD_W, WORLD_H);
 		}
 
-		// LEVEL COMPLETE ONLY when exit is reached AND all collectibles are collected
-		if (player != null && exit != null
-				&& player.getBounds().intersects(exit.getBounds())) {
+		// Andrew feature: timer updates (invincibility/shield duration, etc)
+		if (player != null) {
+			player.updateTimers();
+		}
+
+		// YOUR level completion logic
+		if (player != null && exit != null && player.getBounds().intersects(exit.getBounds())) {
 			oldLives = player.getLives();
 			levelComplete = true;
 		}
+
+		hitZombie();
 	}
 
+	/**
+	 * YOUR MOVEMENT: step-by-step collision so you never "tunnel" through walls.
+	 */
 	public void movePlayer(int dx, int dy) {
 		if (player == null) return;
 
@@ -110,26 +127,75 @@ public class GameModel {
 		else if (dx > 0) player.setDirection(Player.Direction.RIGHT);
 	}
 
+	/**
+	 * YOUR INPUT BEHAVIOR:
+	 * Collect happens when the user presses space (or whatever triggers this).
+	 *
+	 * UPDATED to support Andrew's ShieldPowerUp.
+	 */
 	public void collectItem() {
 		if (player == null) return;
 
 		collectibles.removeIf(c -> {
-			if (player.getBounds().intersects(c.getBounds())) {
+			if (!player.getBounds().intersects(c.getBounds())) return false;
+
+			// If Andrew's code introduced ShieldPowerUp, support it.
+			if (c instanceof ShieldPowerUp) {
+				ShieldPowerUp sp = (ShieldPowerUp) c;
+				player.activateShield(sp.getDuration());
+			} else {
 				score += 50;
-				return true;
 			}
-			return false;
+			return true;
 		});
 	}
 
+	/**
+	 * UPDATED Zombie hit logic:
+	 * - If shield is active, absorb hit, knock zombie back, and give short i-frames
+	 * - Else take damage if not invincible, respawn player (YOUR behavior), give i-frames
+	 *
+	 * If your Zombie uses getCollisionRectangle() instead of getBounds(), we can keep that too.
+	 * Here we use getBounds() (Andrew style). If you need collision rectangle, tell me and I’ll swap it.
+	 */
 	public void hitZombie() {
 		if (player == null) return;
 
 		for (Zombie z : zombies) {
-			if (player.getBounds().intersects(z.getCollisionRectangle())) {
-				player.updateLives();
-				respawnPlayer();
-				return;
+			if (player.getBounds().intersects(z.getBounds())) {
+
+				// Case 1: shield absorbs
+				if (player.hasShield()) {
+					player.deactivateShield();
+
+					int dx = Integer.signum(z.getX() - player.getX());
+					int dy = Integer.signum(z.getY() - player.getY());
+					if (z.isHorizontal()) dy = 0;
+					else dx = 0;
+
+					z.knockBack(dx, dy);
+					player.setDamageInvincible(20);
+					return;
+				}
+
+				// Case 2: normal damage
+				if (!player.isDamageInvincible()) {
+					player.updateLives();
+					player.setDamageInvincible(20);
+
+					// YOUR behavior: respawn player after taking damage
+					respawnPlayer();
+
+					int dx = Integer.signum(z.getX() - player.getX());
+					int dy = Integer.signum(z.getY() - player.getY());
+					if (z.isHorizontal()) dy = 0;
+					else dx = 0;
+
+					z.knockBack(dx, dy);
+					return;
+				}
+
+				return; // only process one zombie per frame
 			}
 		}
 	}
@@ -153,6 +219,9 @@ public class GameModel {
 				|| a.getY() + a.getH() > WORLD_H;
 	}
 
+	/**
+	 * YOUR LOADER ENTRYPOINT (kept)
+	 */
 	public void loadLevel() {
 		levelComplete = false;
 
@@ -167,6 +236,8 @@ public class GameModel {
 
 		ArrayList<String> lines = readAllLines(filename);
 		if (lines.isEmpty()) {
+			playerStartX = TILE;
+			playerStartY = TILE;
 			player = new Player(oldLives, PLAYER_SIZE, PLAYER_SIZE, TILE, TILE);
 			zombies.add(new Zombie(ZOMBIE_SIZE, ZOMBIE_SIZE, 5 * TILE, 5 * TILE, true));
 			return;
@@ -222,9 +293,21 @@ public class GameModel {
 				case 'G':
 					int cw = TILE / 3;
 					int chh = TILE / 3;
-					collectibles.add(new Collectible(cw, chh,
+					collectibles.add(new Collectible(
+							cw, chh,
 							x + (TILE - cw) / 2,
-							y + (TILE - chh) / 2));
+							y + (TILE - chh) / 2
+					));
+					break;
+
+				case 'S': // Andrew feature: ShieldPowerUp tile
+					int sw = TILE / 3;
+					int sh = TILE / 3;
+					collectibles.add(new ShieldPowerUp(
+							sw, sh,
+							x + (TILE - sw) / 2,
+							y + (TILE - sh) / 2
+					));
 					break;
 
 				case 'X':
@@ -238,6 +321,8 @@ public class GameModel {
 		}
 
 		if (player == null) {
+			playerStartX = TILE;
+			playerStartY = TILE;
 			player = new Player(oldLives, PLAYER_SIZE, PLAYER_SIZE, TILE, TILE);
 		}
 	}

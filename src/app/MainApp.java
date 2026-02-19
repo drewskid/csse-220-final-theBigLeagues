@@ -1,5 +1,7 @@
 package app;
 
+import java.awt.Color;
+
 import javax.swing.SwingUtilities;
 
 import model.GameModel;

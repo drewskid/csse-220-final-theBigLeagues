@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class GameModel {
 
@@ -20,10 +21,12 @@ public class GameModel {
 
 	private ArrayList<Floor> floor = new ArrayList<>();
 	private ArrayList<Wall> walls = new ArrayList<>();
+	private ArrayList<Door> doors = new ArrayList<>();
 	private Exit exit;
 	private Player player;
 	private ArrayList<Zombie> zombies = new ArrayList<>();
 	private ArrayList<Collectible> collectibles = new ArrayList<>();
+	private boolean hasKey = false;
 
 	// YOUR STATE (kept)
 	private int score = 0;
@@ -63,6 +66,7 @@ public class GameModel {
 	public void draw(Graphics2D g2) {
 		for (Floor f : floor) f.draw(g2);
 		for (Wall w : walls) w.draw(g2);
+		for(Door d : doors) d.draw(g2);
 		if (exit != null) exit.draw(g2);
 		for (Collectible c : collectibles) c.draw(g2);
 		if (player != null) player.draw(g2);
@@ -111,13 +115,13 @@ public class GameModel {
 			if (stepX != 0) {
 				int oldX = player.getX();
 				player.setX(oldX + stepX);
-				if (outOfBounds(player) || hitsWall(player)) player.setX(oldX);
+				if (outOfBounds(player) || hitsObstacle(player)) player.setX(oldX);
 			}
 
 			if (stepY != 0) {
 				int oldY = player.getY();
 				player.setY(oldY + stepY);
-				if (outOfBounds(player) || hitsWall(player)) player.setY(oldY);
+				if (outOfBounds(player) || hitsObstacle(player)) player.setY(oldY);
 			}
 		}
 
@@ -133,12 +137,34 @@ public class GameModel {
 	 *
 	 * UPDATED to support Andrew's ShieldPowerUp.
 	 */
+	private boolean hitsObstacle(Asset a) {
+		for(Wall w : walls) {
+			if(a.getBounds().intersects(w.getBounds()))
+				return true;
+		}
+		Iterator<Door> it =doors.iterator();
+		while(it.hasNext()) {
+			Door d = it.next();
+			if(a.getBounds().intersects(d.getBounds())) {
+				if(hasKey) {
+					it.remove();
+					return false;
+				}
+				return true;
+			}
+		}
+		return false;
+	}
 	public void collectItem() {
 		if (player == null) return;
 
 		collectibles.removeIf(c -> {
 			if (!player.getBounds().intersects(c.getBounds())) return false;
-
+			// Code that implements the key
+			if(c instanceof Key) {
+				hasKey = true;
+				return true;
+			}
 			// If Andrew's code introduced ShieldPowerUp, support it.
 			if (c instanceof ShieldPowerUp) {
 				ShieldPowerUp sp = (ShieldPowerUp) c;
@@ -206,12 +232,13 @@ public class GameModel {
 		player.setY(playerStartY);
 	}
 
-	private boolean hitsWall(Asset a) {
-		for (Wall w : walls) {
-			if (a.getBounds().intersects(w.getBounds())) return true;
-		}
-		return false;
-	}
+//	Replaced by Obstacle
+//	private boolean hitsWall(Asset a) {
+//		for (Wall w : walls) {
+//			if (a.getBounds().intersects(w.getBounds())) return true;
+//		}
+//		return false;
+//	}
 
 	private boolean outOfBounds(Asset a) {
 		return a.getX() < 0 || a.getY() < 0
@@ -224,11 +251,13 @@ public class GameModel {
 	 */
 	public void loadLevel() {
 		levelComplete = false;
+		hasKey = false;
 
 		String filename = this.level;
 
 		floor.clear();
 		walls.clear();
+		doors.clear();
 		zombies.clear();
 		collectibles.clear();
 		player = null;
@@ -267,6 +296,16 @@ public class GameModel {
 				case '*':
 				case '#':
 					walls.add(new Wall(TILE, TILE, x, y));
+					break;
+				
+				case 'D':
+					doors.add(new Door(TILE, TILE, x, y));
+					break;
+				
+				case 'K':
+					int kw = TILE * 2 / 3;
+					int kh = TILE * 2 / 3;
+					collectibles.add(new Key(kw, kh, x + (TILE - kw) / 2, y + (TILE - kh) / 2));
 					break;
 
 				case 'P':

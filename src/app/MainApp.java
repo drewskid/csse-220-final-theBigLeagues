@@ -7,10 +7,10 @@ import ui.GameWindow;
 
 public class MainApp {
 	public static void main(String[] args) {
-		
-		GameModel model1 = new GameModel();
-		
-		
-		SwingUtilities.invokeLater(() ->new GameWindow(model1).run());
+
+		GameModel model = new GameModel("level1.txt");
+		System.out.println("Game is running");
+
+		SwingUtilities.invokeLater(() -> new GameWindow(model).run());
 	}
 }

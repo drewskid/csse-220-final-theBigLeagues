@@ -20,41 +20,56 @@ import model.Player;
 
 public class GameComponent extends JPanel {
 
-	private final int WIDTH = 800;
-	private final int HEIGHT = 600;
-	private GameModel model;
-	private boolean up, down, left, right, space, R;
-	private boolean gameOver = false;
+	private static final int WIDTH = 800;
+	private static final int HEIGHT = 600;
 
-	public GameComponent(GameModel model) {
+	private final GameModel model;
+	private final GameEvents events;
+
+	private boolean up, down, left, right;
+
+	private final Timer timer;
+
+	public GameComponent(GameModel model, GameEvents events) {
 		this.model = model;
-		space = false;
-		R = false;
-		setPreferredSize(new Dimension(WIDTH, HEIGHT));
+		this.events = events;
 
+		setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		setupKeyBindings();
-		
-		Timer timer = new Timer(16, e -> {
-			if(model.getPlayer().getLives() <= 0) {
-				if (R) model.resetGame();
-				repaint();
-				return;
-			}
-			handlePlayerMovement();
-			model.update();   
-			model.collectItem();
-			model.hitZombie();
-			repaint();
-		});
+
+		timer = new Timer(16, e -> tick());
 		timer.start();
-		
-		
-		
 	}
 
+	private void tick() {
+		// death -> switch card
+		if (model.isPlayerDead()) {
+			timer.stop();
+			if (events != null) events.onPlayerDied();
+			return;
+		}
+
+		handlePlayerMovement();
+
+		model.update();
+		model.collectItem();
+		model.hitZombie();
+
+		// level complete -> switch card
+		if (model.isLevelComplete()) {
+			timer.stop();
+			if (events != null) events.onLevelComplete();
+			return;
+		}
+
+		repaint();
+	}
 
 	private void handlePlayerMovement() {
-		int speed = model.getPlayer().getSpeed();
+		Player p = model.getPlayer();
+		if (p == null) return;
+
+		int speed = p.getSpeed();
 		int dx = 0;
 		int dy = 0;
 
@@ -81,80 +96,59 @@ public class GameComponent extends JPanel {
 		input.put(KeyStroke.getKeyStroke("released LEFT"), "leftReleased");
 		input.put(KeyStroke.getKeyStroke("pressed RIGHT"), "rightPressed");
 		input.put(KeyStroke.getKeyStroke("released RIGHT"), "rightReleased");
-		input.put(KeyStroke.getKeyStroke("pressed SPACE"), "spacePressed");
-		input.put(KeyStroke.getKeyStroke("released SPACE"), "spaceReleased");
-		input.put(KeyStroke.getKeyStroke("pressed R"), "rPressed");
-		input.put(KeyStroke.getKeyStroke("released R"), "rReleased");
 
 		actions.put("upPressed", new AbstractAction() {
-		    @Override
-		    public void actionPerformed(ActionEvent e) { up = true; }
+			@Override
+			public void actionPerformed(ActionEvent e) { up = true; }
 		});
 		actions.put("upReleased", new AbstractAction() {
-		    @Override
-		    public void actionPerformed(ActionEvent e) { up = false; }
+			@Override
+			public void actionPerformed(ActionEvent e) { up = false; }
 		});
 
 		actions.put("downPressed", new AbstractAction() {
-		    @Override
-		    public void actionPerformed(ActionEvent e) { down = true; }
+			@Override
+			public void actionPerformed(ActionEvent e) { down = true; }
 		});
 		actions.put("downReleased", new AbstractAction() {
-		    @Override
-		    public void actionPerformed(ActionEvent e) { down = false; }
+			@Override
+			public void actionPerformed(ActionEvent e) { down = false; }
 		});
 
 		actions.put("leftPressed", new AbstractAction() {
-		    @Override
-		    public void actionPerformed(ActionEvent e) { left = true; }
+			@Override
+			public void actionPerformed(ActionEvent e) { left = true; }
 		});
 		actions.put("leftReleased", new AbstractAction() {
-		    @Override
-		    public void actionPerformed(ActionEvent e) { left = false; }
+			@Override
+			public void actionPerformed(ActionEvent e) { left = false; }
 		});
 
 		actions.put("rightPressed", new AbstractAction() {
-		    @Override
-		    public void actionPerformed(ActionEvent e) { right = true; }
+			@Override
+			public void actionPerformed(ActionEvent e) { right = true; }
 		});
 		actions.put("rightReleased", new AbstractAction() {
-		    @Override
-		    public void actionPerformed(ActionEvent e) { right = false; }
+			@Override
+			public void actionPerformed(ActionEvent e) { right = false; }
 		});
-		actions.put("spacePressed", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {space = true;}
-		});
-		actions.put("spaceReleased", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {space = false;}
-		});
-		actions.put("rPressed", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {R = true;}
-		});
-		actions.put("rReleased", new AbstractAction() {
-			public void actionPerformed(ActionEvent e) {R = false;}
-		});
-		
-		
-		
-
 	}
 
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
+
 		model.draw(g2);
+
+		// HUD
 		g2.setColor(Color.WHITE);
 		g2.setFont(new Font("Monospaced", Font.BOLD, 20));
 		g2.drawString("Score: " + model.getScore(), 20, 25);
-		g2.drawString("Lives: " + model.getPlayer().getLives(), 40, 50);
-		if(model.getPlayer().getLives() <= 0) {
-			g2.setFont(new Font("Monospaced", Font.BOLD, 48));
-			g2.setColor(Color.RED);
-			String msg = "GAME OVER";
-			g2.drawString(msg, (WIDTH/2)-100, HEIGHT/2);
-			g2.setFont(new Font("Monospaced", Font.BOLD, 20));
-			g2.drawString("Press R to Restart", (WIDTH/2)-75, HEIGHT/2+40);
+
+		Player p = model.getPlayer();
+		if (p != null) {
+			g2.drawString("Lives: " + p.getLives(), 20, 50);
 		}
 	}
 }

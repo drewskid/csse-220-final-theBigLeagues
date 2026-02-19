@@ -33,7 +33,7 @@ public class Zombie extends Asset {
         collisionArea.setBounds(getX() + inset, getY() + inset, getW() - 2 * inset, getH() - 2 * inset);
     }
 
-    public void update(List<Wall> walls, int worldW, int worldH) {
+    public void update(List<Wall> walls, List<Door> doors, int worldW, int worldH) {
 
         // ANDREW behavior: apply knockback first, then return
         if (knockbackTimer > 0) {
@@ -66,6 +66,15 @@ public class Zombie extends Asset {
                     return;
                 }
             }
+            for (Door d : doors) {
+                if (getBounds().intersects(d.getBounds())) {
+                    setX(oldX);
+                    setY(oldY);
+                    updateCollisionArea();
+                    knockbackTimer = 0;
+                    return;
+                }
+            }
 
             knockbackTimer--;
             return;
@@ -91,6 +100,15 @@ public class Zombie extends Asset {
         // bounce off walls
         for (Wall w : walls) {
             if (getBounds().intersects(w.getBounds())) {
+                setX(getX() - dx);
+                setY(getY() - dy);
+                speed = -speed;
+                updateCollisionArea();
+                break;
+            }
+        }
+        for (Door d : doors) {
+            if (getBounds().intersects(d.getBounds())) {
                 setX(getX() - dx);
                 setY(getY() - dy);
                 speed = -speed;

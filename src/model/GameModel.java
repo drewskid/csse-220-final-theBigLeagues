@@ -82,7 +82,7 @@ public class GameModel {
 	 */
 	public void update() {
 		for (Zombie z : zombies) {
-			z.update(walls, WORLD_W, WORLD_H);
+			z.update(walls, doors, WORLD_W, WORLD_H);
 		}
 
 		// Andrew feature: timer updates (invincibility/shield duration, etc)
@@ -148,6 +148,7 @@ public class GameModel {
 			if(a.getBounds().intersects(d.getBounds())) {
 				if(hasKey) {
 					it.remove();
+					hasKey = false;
 					return false;
 				}
 				return true;

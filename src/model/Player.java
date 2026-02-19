@@ -1,6 +1,7 @@
 package model;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 public class Player extends Asset {
@@ -15,6 +16,9 @@ public class Player extends Asset {
     private final BufferedImage upSprite;
     private final BufferedImage leftSprite;
     private final BufferedImage rightSprite;
+    
+    private boolean shieldActive = false;
+    private int damageInvincibleTimer = 0;
     
 
     private Direction dir = Direction.DOWN;
@@ -37,8 +41,23 @@ public class Player extends Asset {
         applySprite();
     }
     
+    
+    
 
-    public int getSpeed() { return speed; }
+    @Override
+	public void draw(Graphics2D g2) {
+		// TODO Auto-generated method stub
+		super.draw(g2);
+		if (shieldActive) {
+		    g2.setColor(new Color(0, 150, 255, 100));
+		    g2.fillOval(getX() - 5, getY() - 5, getW() + 10, getH() + 10);
+		}
+	}
+
+
+
+
+	public int getSpeed() { return speed; }
     
     public int getLives() {return lives;}
 
@@ -60,5 +79,30 @@ public class Player extends Asset {
     
     protected void updateLives() {
     	this.lives -= 1;
+    }
+    
+    public boolean hasShield() {
+        return shieldActive;
+    }
+
+    public void activateShield(int duration) {
+        shieldActive = true;
+        // optional timer if you want shields to expire automatically
+    }
+
+    public void deactivateShield() {
+        shieldActive = false;
+    }
+
+    public boolean isDamageInvincible() {
+        return damageInvincibleTimer > 0;
+    }
+
+    public void setDamageInvincible(int duration) {
+        damageInvincibleTimer = duration;
+    }
+
+    public void updateTimers() {
+        if (damageInvincibleTimer > 0) damageInvincibleTimer--;
     }
 }

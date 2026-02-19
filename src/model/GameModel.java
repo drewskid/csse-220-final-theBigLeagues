@@ -34,6 +34,7 @@ public class GameModel {
 
     public GameModel() {
         this.floor = new Floor(WORLD_H, WORLD_W, 0, 0);
+        this.exit = new Exit(WORLD_H, WORLD_W, 0, 0);
         loadLevel("level1.txt");
     }
 
@@ -52,6 +53,7 @@ public class GameModel {
     }
 
     public void update() {
+    	
         for (Zombie z : zombies) {
             z.update(walls, WORLD_W, WORLD_H);
         }
@@ -60,8 +62,9 @@ public class GameModel {
         	loadLevel("level2.txt");
         	//make a set lives method in player to retain oldLives
         }
+        player.updateTimers();
         
-        
+        hitZombie();
 
         // Optional: basic collectible pickup (only if Collectible extends Asset and you want it)
         // collectibles.removeIf(c -> player != null && player.getBounds().intersects(c.getBounds()));
@@ -114,23 +117,70 @@ public class GameModel {
     public void collectItem() {
 
         collectibles.removeIf(c -> {
-        	if(player.getBounds().intersects(c.getBounds())) {
-        		score += 50; // each coin is worth 50, can be changed
-        		return true;
-        	}
-        	return false;
+
+            if (player.getBounds().intersects(c.getBounds())) {
+
+                if (c instanceof ShieldPowerUp) {
+                    ShieldPowerUp sp = (ShieldPowerUp) c;
+                    player.activateShield(sp.getDuration());
+                } else {
+                    score += 50; // each coin is worth 50, can be changed
+                }
+
+                return true;
+            }
+            return false;
         });
     }
     
     public void hitZombie() {
-    	for (Zombie z : zombies) {
-    		if (player.getBounds().intersects(z.getBounds())) {
-    			player.updateLives();
-    			respawnPlayer();
-    			return;
-    		}
-    	}
+
+        for (Zombie z : zombies) {
+
+            if (player.getBounds().intersects(z.getBounds())) {
+
+                // --- Case 1: Shield active --- 
+            	
+                if (player.hasShield()) {
+                    // Shield absorbs the hit
+                    player.deactivateShield();
+
+                    // Knockback zombie
+                    int dx = Integer.signum(z.getX() - player.getX());
+                    int dy = Integer.signum(z.getY() - player.getY());
+                    if (z.isHorizontal()) dy = 0;
+                    else dx = 0;
+
+                    z.knockBack(dx, dy);
+
+                    // Stop further processing
+                    player.setDamageInvincible(20);
+                    return;
+                }
+
+                // --- Case 2: Normal damage ---
+                if (!player.isDamageInvincible()) {
+                    player.updateLives();              // remove one life
+                    player.setDamageInvincible(20);    // short invincibility
+                    int dx = Integer.signum(z.getX() - player.getX());
+                    int dy = Integer.signum(z.getY() - player.getY());
+                    if (z.isHorizontal()) dy = 0;
+                    else dx = 0;
+                    
+                    z.knockBack(dx, dy);
+                    return;
+                }
+
+                return; // process only one zombie per frame
+            }
+        }
     }
+
+
+
+
+
+    
     public void respawnPlayer() {
     	player.setX(playerStartX);
     	player.setY(playerStartY);
@@ -234,6 +284,15 @@ public class GameModel {
                    case 'X':
                 	   exit = new Exit(TILE, TILE, x, y);
                        break;
+                   case 'S':
+                	    int sw = TILE / 3;
+                	    int sh = TILE / 3;
+                	    collectibles.add(new ShieldPowerUp(
+                	            sw, sh,
+                	            x + (TILE - sw) / 2,
+                	            y + (TILE - sh) / 2
+                	    ));
+                	    break;
 
                     // '.', ' ', 'E' etc. are just open floor tiles; do nothing
                     default:

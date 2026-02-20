@@ -148,7 +148,7 @@ public class GameComponent extends JPanel {
 
 		Player p = model.getPlayer();
 		if (p != null) {
-			g2.drawString("Lives: " + p.getLives(), 20, 50);
+			g2.drawString("Lives: " + p.getLives(), 20, 45);
 		}
 	}
 }

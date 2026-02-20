@@ -26,7 +26,7 @@ public class GameWindow implements GameEvents {
 
 	private LevelPanel levelPanel; // recreated each level
 
-	private final String[] levels = { "level1.txt", "level2.txt", "level3.txt", "level4.txt"};
+	private final String[] levels = { "level1.txt", "level2.txt", "level3.txt", "level4.txt", "level5.txt"};
 	private int levelIndex = 0;
 
 	public GameWindow(GameModel model) {

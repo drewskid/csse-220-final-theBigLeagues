@@ -6,13 +6,13 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 public abstract class Asset {
-    private int height;
-    private int width;
+    protected int height;
+    protected int width;
     private int x;
     private int y;
 
     // optional sprite
-    private BufferedImage sprite;
+    protected BufferedImage sprite;
 
     // optional fallback color
     private Color color;

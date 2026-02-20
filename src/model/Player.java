@@ -24,7 +24,7 @@ public class Player extends Asset {
     private Direction dir = Direction.DOWN;
 
     public Player(int lives, int h, int w, int x, int y) {
-        super(h, w, x, y, Color.BLUE);
+        super(h, w - 10, x, y, Color.BLUE);     
         this.lives = lives;
 
         // load sprites once
